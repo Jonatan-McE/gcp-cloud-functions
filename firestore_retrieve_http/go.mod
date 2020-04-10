@@ -1,0 +1,8 @@
+module github.com/Jonatan-McE/gcp-cloud-functions/firestore_retrieve_http
+
+go 1.14
+
+require (
+	cloud.google.com/go/firestore v1.2.0
+	google.golang.org/api v0.21.0
+)
