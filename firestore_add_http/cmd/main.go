@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	firestorehttp "github.com/jonatan-mce/gcp-cloud-functions/firestore_http"
+	firestorehttp "github.com/Jonatan-McE/gcp-cloud-functions/firestore_add_http"
 )
 
 func main() {
