@@ -2,15 +2,21 @@ package firestorehttp
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"net/http"
 	"os"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 )
 
-// Retrieve is an HTTP Cloud Function with a URL parameter.
+type atendy struct {
+	ID        string    `json:"id"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// Retrieve is an HTTP Cloud Function thar return database docuuments in json.
 func Retrieve(w http.ResponseWriter, r *http.Request) {
 
 	ctx := context.Background()
@@ -22,7 +28,8 @@ func Retrieve(w http.ResponseWriter, r *http.Request) {
 	}
 	defer client.Close()
 
-	iter := client.Collection(os.Getenv("GCLOUD_DATABASE_COLLECTION")).Documents(ctx)
+	var atendys []atendy
+	iter := client.Collection(os.Getenv("GCLOUD_DATABASE_COLLECTION")).OrderBy("timestamp", firestore.Desc).Documents(ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -33,11 +40,19 @@ func Retrieve(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(err.Error()))
 			return
 		}
-		fmt.Println(doc.Data())
+
+		atendys = append(atendys, atendy{ID: doc.Data()["id"].(string), Timestamp: doc.Data()["timestamp"].(time.Time)})
+	}
+	jsonData, err := json.Marshal(atendys)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Looks good\n"))
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
 
 	return
 }

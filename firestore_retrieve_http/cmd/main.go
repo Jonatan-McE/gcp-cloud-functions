@@ -10,6 +10,6 @@ import (
 
 func main() {
 	http.HandleFunc("/", firestorehttp.Retrieve)
-	fmt.Println("Listening on localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	fmt.Println("Listening on localhost:8081")
+	log.Fatal(http.ListenAndServe(":8081", nil))
 }
