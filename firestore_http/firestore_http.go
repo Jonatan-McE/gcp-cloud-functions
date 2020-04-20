@@ -58,8 +58,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte("OK"))
+		http.Redirect(w, r, os.Getenv("REDIRECT_URL"), 307)
 
 		return
 	}
