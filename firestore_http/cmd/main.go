@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", firestorehttp.Get)
+	http.HandleFunc("/submit", firestorehttp.Submit)
+	http.HandleFunc("/retrieve", firestorehttp.Retrieve)
 	fmt.Println("Listening on localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
