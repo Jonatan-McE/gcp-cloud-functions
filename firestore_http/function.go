@@ -129,7 +129,14 @@ func Retrieve(w http.ResponseWriter, r *http.Request) {
 
 		atendys = append(atendys, atendy{ID: doc.Data()["id"].(string), Timestamp: doc.Data()["timestamp"].(time.Time)})
 	}
-
+	/*
+		if atendys == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("[]"))
+			return
+		}
+	*/
 	jsonData, err := json.Marshal(atendys)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
