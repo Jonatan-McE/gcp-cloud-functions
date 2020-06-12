@@ -14,20 +14,28 @@ import (
 )
 
 type atendy struct {
-	ID        string    `json:"id"`
-	Timestamp time.Time `json:"timestamp"`
+	UserID     string    `json:"userid"`
+	OccasionID string    `json:"occasionid"`
+	Timestamp  time.Time `json:"timestamp"`
 }
 
 // Submit new user info into the database
 func Submit(w http.ResponseWriter, r *http.Request) {
 
-	keys, ok := r.URL.Query()["id"]
-	if ok {
-		var id string
+	userID, okUserID := r.URL.Query()["userid"]
+	occasionID, okoccasionID := r.URL.Query()["occasionid"]
+	if okUserID || okoccasionID {
+		var user string
+		var occasion string
 
-		if len(keys[0]) < 1 {
+		if len(userID[0]) < 1 {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Missing ID value\n"))
+			w.Write([]byte("Missing userID value\n"))
+			return
+		}
+		if len(occasionID[0]) < 1 {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Missing occasionID value\n"))
 			return
 		}
 		filter, err := regexp.Compile("[^a-zA-Z0-9]+")
@@ -37,7 +45,8 @@ func Submit(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		id = filter.ReplaceAllString(keys[0], "")
+		user = filter.ReplaceAllString(userID[0], "")
+		occasion = filter.ReplaceAllString(occasionID[0], "")
 
 		ctx := context.Background()
 		client, err := firestore.NewClient(ctx, os.Getenv("GCLOUD_PROJECT"))
@@ -49,8 +58,9 @@ func Submit(w http.ResponseWriter, r *http.Request) {
 		defer client.Close()
 
 		_, _, err = client.Collection(os.Getenv("GCLOUD_DATABASE_COLLECTION")).Add(ctx, map[string]interface{}{
-			"timestamp": firestore.ServerTimestamp,
-			"id":        id,
+			"timestamp":  firestore.ServerTimestamp,
+			"userid":     user,
+			"occasionid": occasion,
 		})
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -127,7 +137,7 @@ func Retrieve(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		atendys = append(atendys, atendy{ID: doc.Data()["id"].(string), Timestamp: doc.Data()["timestamp"].(time.Time)})
+		atendys = append(atendys, atendy{UserID: doc.Data()["userid"].(string), OccasionID: doc.Data()["occasionid"].(string), Timestamp: doc.Data()["timestamp"].(time.Time)})
 	}
 	/*
 		if atendys == nil {
